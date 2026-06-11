@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app
+  namespace: production
+  labels:
+    app: devops-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devops-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # create 1 extra pod during update
+      maxUnavailable: 0  # never kill old pod before new one is ready
+  template:
+    metadata:
+      labels:
+        app: devops-app
+    spec:
+      serviceAccountName: devops-app-sa
+      securityContext:
+        runAsNonRoot: true      # pod level: enforce non-root
+        runAsUser: 1000
+        fsGroup: 2000
+      containers:
+        - name: devops-app
+          image: 585980862780.dkr.ecr.us-east-1.amazonaws.com/devops-project-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+          resources:
+            requests:
+              cpu: "100m"      # 0.1 CPU core guaranteed
+              memory: "128Mi"  # 128MB RAM guaranteed
+            limits:
+              cpu: "500m"      # 0.5 CPU core max
+              memory: "256Mi"  # 256MB RAM max
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 10  # wait 10s before first check
+            periodSeconds: 10        # check every 10s
+            failureThreshold: 3      # restart after 3 failures
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]   # drop all linux capabilities

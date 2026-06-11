@@ -1,0 +1,33 @@
+grafana:
+  adminPassword: DevOps@123
+  persistence:
+    enabled: true
+    size: 5Gi
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    additionalScrapeConfigs:
+      - job_name: 'devops-app'
+        static_configs:
+          - targets: ['devops-app-svc.production.svc.cluster.local:80']
+        metrics_path: /metrics
+
+alertmanager:
+  config:
+    global:
+      slack_api_url: 'YOUR_SLACK_WEBHOOK_URL'
+    route:
+      receiver: 'slack'
+    receivers:
+      - name: 'slack'
+        slack_configs:
+          - channel: '#alerts'
+            text: '{{ .CommonAnnotations.description }}'

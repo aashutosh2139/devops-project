@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    env: production
+    app: devops-project
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: devops-app-sa
+  namespace: production
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::585980862780:role/devops-app-irsa-role

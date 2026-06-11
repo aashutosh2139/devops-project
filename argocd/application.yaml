@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devops-project
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_USERNAME/devops-project
+    targetRevision: main
+    path: k8s/base          # watches this folder in git
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true      # delete resources removed from git
+      selfHeal: true   # revert manual kubectl changes
+    syncOptions:
+      - CreateNamespace=true
