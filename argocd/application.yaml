@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOUR_USERNAME/devops-project
+    repoURL: https://github.com/aashutosh2139/devops-project
     targetRevision: main
     path: k8s/base          # watches this folder in git
   destination:
